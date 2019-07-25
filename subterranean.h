@@ -2,11 +2,9 @@
 #define SUBTERRANEAN
 
 #include <vector>
-#include "gurobi_c++.h"
 using namespace std;
 
 #define SIZE 257
-#define GUESSED_NUM 18
 typedef unsigned int UINT32;
 typedef unsigned long long UINT64;
 
