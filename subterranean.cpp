@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <vector>
 #include <ctime>
-#include "gurobi_c++.h"
 #include "subterranean.h"
 using namespace std;
 
