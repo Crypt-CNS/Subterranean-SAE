@@ -399,3 +399,120 @@ void Subterranean::fullStateRecoveryType2(bool secretState[], bool recoveredValu
 		}
 	}
 }
+
+bool Subterranean::recoverSingleBitType4(bool  secretState[], int v0Pos, int v1Pos) {
+	int inverse_subterranean_io_bits_0[SIZE];
+	for (int i = 0; i < SIZE; i++) {
+		inverse_subterranean_io_bits_0[i] = SIZE;
+	}
+	for (int i = 0; i < 33; i++) {
+		inverse_subterranean_io_bits_0[subterranean_io_bits_0[i]] = i;
+	}
+
+	bool* startState, * tmpState;
+	startState = new bool[SIZE];
+	tmpState = new bool[SIZE];
+
+	for (int i = 0; i < SIZE; i++) {
+		startState[i] = secretState[i];
+		tmpState[i] = startState[i];
+	}
+
+	bool M0[32], M1[32], M2[32];
+	bool sum[32], output[32];
+	bool wholeSum[SIZE];
+	for (int i = 0; i < 32; i++) {
+		M0[i] = 0;
+		M1[i] = 0;
+		M2[i] = 0;
+		sum[i] = 0;
+	}
+
+	for (UINT32 i = 0; i < 4; i++) {
+		M0[inverse_subterranean_io_bits_0[v0Pos]] = i & 0x1;
+		M2[inverse_subterranean_io_bits_0[v1Pos]] = (i >> 1) & 0x1;
+
+		for (int j = 0; j < SIZE; j++) {
+			startState[j] = tmpState[j];
+		}
+
+		//inject M0
+		for (int j = 0; j < 32; j++) {
+			startState[subterranean_io_bits_0[j]] ^= M0[j];
+		}
+		startState[subterranean_io_bits_0[32]] ^= 1;
+
+		duplex(startState, M1, 32);
+		//if (v0Pos == 140 && v1Pos == 249) {
+			//cout << "state[182]:" << startState[182] << endl;
+		//}
+
+		duplex(startState, M2, 32);
+		duplex(startState, M1, 32);
+		extract(startState, output);
+
+		for (int j = 0; j < 32; j++) {
+			sum[j] = sum[j] ^ output[j];
+		}
+	}
+	delete[]startState;
+	delete[]tmpState;
+
+	for (int i = 0; i < 32; i++) {
+		if (sum[i]) {
+			//if (v0Pos == 140 && v1Pos == 249) {
+				//cout << "sum not zero" << endl;
+			//}
+			return false;
+		}
+	}
+	//if (v0Pos == 140 && v1Pos == 249) {
+		//cout << "sum is zero" << endl;
+	//}
+	return true;
+}
+
+void Subterranean::fullStateRecoveryType4(bool secretState[], bool recoveredValue[], bool isConditionPos[]) {
+	//read parameter
+	int v0;
+	int v1;
+	int size;
+	int round;
+	int conditionPos;
+	int value;
+	int parSize = 0;
+	bool flag = true;
+
+	vector<int> V0POS, V1POS, CON, VAL;
+	V0POS.clear();
+	V1POS.clear();
+	CON.clear();
+	VAL.clear();
+	ifstream readPar("parameter4.txt");
+	readPar >> parSize;
+	for (int i = 0; i < parSize; i++) {
+		readPar >> v0 >> v1;
+		readPar >> conditionPos >> value;
+
+		V0POS.push_back(v0);
+		V1POS.push_back(v1);
+		CON.push_back(conditionPos);
+		VAL.push_back(value);
+
+		if (conditionPos == 256) {
+			value = value ^ 1;
+		}
+		isConditionPos[conditionPos] = true;
+
+		flag = recoverSingleBitType4(secretState, v0, v1);
+		if (flag) {//Conditiona holds!
+			//if (v0 == 140 && v1 == 249) {
+				//cout << "state: " << conditionPos<< " = " << value << endl;
+			//}
+			recoveredValue[conditionPos] = value;
+		}
+		else {
+			recoveredValue[conditionPos] = value ^ 1;
+		}
+	}
+}
