@@ -49,6 +49,9 @@ public:
 
 	bool recoverSingleBitType2(bool  secretState[], int v0, int v1);
 	void fullStateRecoveryType2(bool secretState[], bool recoveredValue[],bool isConditionPos[]);//Start recovering full state
+
+	bool recoverSingleBitType4(bool  secretState[], int v0, int v1);
+	void fullStateRecoveryType4(bool secretState[], bool recoveredValue[], bool isConditionPos[]);//Start recovering full state
 };
 
 #endif // SUBTERRANEAN
